@@ -4,6 +4,8 @@ import com.proyectoinvdebienes.backend.domain.model.Asset;
 import com.proyectoinvdebienes.backend.domain.model.Assignment;
 import com.proyectoinvdebienes.backend.service.AssignmentService;
 import com.proyectoinvdebienes.backend.service.ReportService;
+import com.proyectoinvdebienes.backend.web.dto.EmployeeAssignedAssetDto;
+import com.proyectoinvdebienes.backend.web.dto.EmployeeInvestmentSummaryDto;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +46,17 @@ public class ReportsController {
     public List<Asset> upcomingDisposals() {
         return reportService.upcomingDisposals();
     }
+
+    @GetMapping("/employee-investment")
+    public List<EmployeeInvestmentSummaryDto> employeeInvestmentSummary() {
+        return reportService.investmentSummaryByEmployee();
+    }
+
+    @GetMapping("/employee/{employeeId}/assigned-assets")
+    public List<EmployeeAssignedAssetDto> assignedAssetsByEmployee(@PathVariable Long employeeId) {
+        return reportService.assignedAssetsByEmployeeCode(employeeId);
+    }
+
 
     @GetMapping("/invested-assets/export")
     public ResponseEntity<byte[]> exportInvestedAssets(@RequestParam(defaultValue = "excel") String format) {
