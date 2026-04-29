@@ -1,37 +1,44 @@
-# Android Demo App (Kotlin) - Inventario de Bienes
+# Android App - Base para consumir backend con login local
 
-Este módulo contiene una **base mínima** para crear una app Android (celular o tablet) que consume el backend de este repositorio.
+Este módulo ahora incluye una **estructura base completa** para iniciar una app Android que consume servicios del backend con autenticación local usando **Basic Auth**.
 
-## Qué incluye
-- Estructura inicial Android (`android-app/app/...`).
-- Cliente HTTP con **Retrofit**.
-- Modelo para la consulta B (`EmployeeAssignedAssetDto`).
-- Pantalla demo (`MainActivity`) para consultar bienes por empleado.
-- Layout básico con campo de código de empleado y botón de consulta.
+## Estructura propuesta
 
-## Endpoints backend usados
-- `GET /api/reports/employee/{employeeId}/assigned-assets`
+- `api/`
+  - `ApiClient.kt`: configuración Retrofit + OkHttp + interceptor de `Authorization`.
+  - `AuthApi.kt`: endpoint `GET /api/auth/me` para validar sesión.
+  - `ReportsApi.kt`: endpoint de ejemplo protegido.
+- `model/`
+  - `AuthUser.kt`: respuesta de perfil autenticado.
+  - `LoginRequest.kt`: modelo local de credenciales.
+  - `EmployeeAssignedAssetDto.kt`: DTO de reporte.
+- `repository/`
+  - `AuthRepository.kt`: orquestación de login (guardar credenciales y validar con `/api/auth/me`).
+- `session/`
+  - `SessionManager.kt`: persistencia local de credenciales en `SharedPreferences`.
+- `ui/`
+  - `MainActivity.kt`: pantalla de login y demo de consumo de endpoint protegido.
 
-## Requisitos
-- Android Studio (Hedgehog o superior recomendado).
-- SDK mínimo 24.
-- Backend levantado y accesible desde tu teléfono.
+## Flujo principal de login local
+
+1. Usuario ingresa `username` y `password`.
+2. Se guardan localmente en `SharedPreferences`.
+3. Interceptor agrega header `Authorization: Basic ...` en cada request.
+4. Se llama `GET /api/auth/me` para validar credenciales.
+5. Si es exitoso, se habilita sección protegida de consulta.
 
 ## Configuración rápida
-1. Abre la carpeta `android-app` en Android Studio.
-2. En `ApiClient.kt`, cambia `BASE_URL` por la IP local de tu PC donde corre backend, por ejemplo:
-   - `http://192.168.1.50:8080/`
-3. Levanta backend (`backend`) en tu máquina.
-4. Ejecuta la app en emulador o teléfono.
 
-## Demo en teléfono (misma red Wi‑Fi)
-1. Conecta teléfono y PC a la misma red.
-2. Obtén IP de tu PC (`ipconfig` en Windows o `ip a` en Linux/macOS).
-3. Asegúrate que firewall permita puerto `8080`.
-4. Inicia backend en `0.0.0.0:8080` si aplica.
-5. En la app, escribe un `employeeId` válido y presiona **Consultar bienes**.
-6. Deberías ver JSON formateado en pantalla.
+1. Abrir `android-app` en Android Studio.
+2. Ajustar `BASE_URL` en `ApiClient.kt`:
+   - Emulador Android Studio: `http://10.0.2.2:8080/`
+   - Teléfono físico (misma red): `http://<IP_LOCAL_PC>:8080/`
+3. Levantar backend.
+4. Ejecutar app.
 
-## Notas
-- Si tu backend requiere autenticación, agrega interceptor/auth header en Retrofit.
-- Esta base está orientada a una **demo inicial** para continuar iterando UI y seguridad.
+## Próximos pasos recomendados
+
+- Reemplazar `SharedPreferences` por `EncryptedSharedPreferences`.
+- Migrar `MainActivity` a arquitectura por capas con `ViewModel`.
+- Incorporar navegación por pantallas (`Login`, `Home`, `Módulos`).
+- Manejar expiración/reintento y mensajes de error por código HTTP.

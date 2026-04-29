@@ -1,6 +1,7 @@
 package com.proyectoinvdebienes.mobile.ui
 
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
@@ -9,6 +10,9 @@ import com.google.gson.GsonBuilder
 import com.proyectoinvdebienes.mobile.R
 import com.proyectoinvdebienes.mobile.api.ApiClient
 import com.proyectoinvdebienes.mobile.model.EmployeeAssignedAssetDto
+import com.proyectoinvdebienes.mobile.model.LoginRequest
+import com.proyectoinvdebienes.mobile.repository.AuthRepository
+import com.proyectoinvdebienes.mobile.session.SessionManager
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -19,9 +23,43 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        val usernameInput = findViewById<EditText>(R.id.usernameInput)
+        val passwordInput = findViewById<EditText>(R.id.passwordInput)
+        val loginButton = findViewById<Button>(R.id.loginButton)
+        val loginResult = findViewById<TextView>(R.id.loginResult)
+
         val employeeInput = findViewById<EditText>(R.id.employeeIdInput)
         val fetchButton = findViewById<Button>(R.id.fetchButton)
         val output = findViewById<TextView>(R.id.outputText)
+
+        val securedSection = findViewById<View>(R.id.securedSection)
+        val sessionManager = SessionManager(this)
+        val authRepository = AuthRepository(ApiClient.authApi(this), sessionManager)
+
+        loginButton.setOnClickListener {
+            val username = usernameInput.text.toString().trim()
+            val password = passwordInput.text.toString()
+
+            if (username.isBlank() || password.isBlank()) {
+                loginResult.text = "Debe ingresar usuario y contraseña."
+                return@setOnClickListener
+            }
+
+            loginResult.text = "Autenticando..."
+            authRepository.login(LoginRequest(username, password)) { result ->
+                runOnUiThread {
+                    result
+                        .onSuccess { user ->
+                            loginResult.text = "Login correcto: ${user.username} (${user.role})"
+                            securedSection.visibility = View.VISIBLE
+                        }
+                        .onFailure { error ->
+                            loginResult.text = "No se pudo iniciar sesión: ${error.message}"
+                            securedSection.visibility = View.GONE
+                        }
+                }
+            }
+        }
 
         fetchButton.setOnClickListener {
             val employeeId = employeeInput.text.toString().toLongOrNull()
@@ -31,7 +69,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             output.text = "Consultando..."
-            ApiClient.reportsApi.getAssignedAssetsByEmployee(employeeId)
+            ApiClient.reportsApi(this).getAssignedAssetsByEmployee(employeeId)
                 .enqueue(object : Callback<List<EmployeeAssignedAssetDto>> {
                     override fun onResponse(
                         call: Call<List<EmployeeAssignedAssetDto>>,
