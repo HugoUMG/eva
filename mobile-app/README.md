@@ -1,37 +1,30 @@
-# Android App (Cascarón UI) - Inventario de Bienes
+# Mobile App (Cascarón UI) - Inventario de Bienes
 
-Esta versión es un **cascarón visual completo** basado en la estructura del frontend web:
-- Login
-- Menú por rol
-- Módulos visibles según tipo de usuario
-- Vista de detalle de módulo
+Cascarón visual completo basado en frontend/backend, sin conexión real aún.
 
-> En esta etapa **no hay conexión al backend**. Todo es UI/flujo local para validar diseño y navegación base.
+## Qué incluye ahora
 
-## Roles y módulos (igual que web)
+- Login simulado (usuario, contraseña, rol).
+- Menú por rol con módulos permitidos.
+- Acceso a cada módulo.
+- Formularios de campos por módulo (estructura basada en backend/frontend).
+- Botones de acción simulados: **Guardar borrador** y **Enviar**.
 
-- `ADMINISTRADOR`: todos los módulos.
-- `COMPRAS`: Adquisiciones.
-- `INVENTARIO`: Inventario, Asignaciones, Bajas, Reportes, Catálogos.
-- `FINANZAS`: Reportes.
-- `EMPLEADO`: Mis Activos.
+## Módulos y campos simulados
 
-## Estructura implementada
+- Adquisiciones: datos de activo + compra/factura/proveedor/partida.
+- Inventario: filtros de estado, etiqueta y departamento.
+- Asignaciones: crear asignación + confirmación.
+- Bajas: solicitud + aprobación/rechazo.
+- Reportes: filtros por empleado/departamento/fechas.
+- Catálogos: proveedor + partida presupuestaria.
+- Empleados (admin): usuario/rol + datos del empleado.
+- Mis activos (empleado): consulta personal.
 
-- `ui/MainActivity.kt`: login + home en una sola pantalla con cambio de panel.
-- `ui/UserRole.kt`: roles del sistema.
-- `ui/UserSession.kt`: sesión local simulada.
-- `ui/ModuleCard.kt`: modelo de tarjetas.
-- `ui/ModuleCatalog.kt`: catálogo de módulos y reglas por rol.
-- `ui/ModuleCardAdapter.kt`: grid de módulos.
-- `res/layout/activity_main.xml`: diseño principal (login + home).
-- `res/layout/item_module_card.xml`: tarjeta visual de módulo.
+## Ejecución
 
-## Cómo usar el cascarón
-
-1. Abrir `mobile-app` en Android Studio.
-2. Ejecutar en emulador o dispositivo.
-3. En login, escribir usuario/contraseña (simulados) y elegir rol.
-4. Presionar **Entrar**.
-5. Se muestra el menú solo con módulos permitidos para ese rol.
-6. Tocar una tarjeta para ver su descripción funcional.
+1. Abrir carpeta `mobile-app` en Android Studio.
+2. Sincronizar Gradle.
+3. Ejecutar en emulador o dispositivo.
+4. Iniciar sesión con cualquier usuario/contraseña y seleccionar rol.
+5. Entrar a cada módulo y revisar el formulario correspondiente.

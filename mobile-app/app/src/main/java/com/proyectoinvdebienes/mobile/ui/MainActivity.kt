@@ -5,8 +5,10 @@ import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -24,6 +26,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var modulesRecycler: RecyclerView
     private lateinit var moduleTitle: TextView
     private lateinit var moduleDescription: TextView
+    private lateinit var formContainer: LinearLayout
 
     private var currentSession: UserSession? = null
 
@@ -48,6 +51,7 @@ class MainActivity : AppCompatActivity() {
         modulesRecycler = findViewById(R.id.modulesRecycler)
         moduleTitle = findViewById(R.id.moduleTitle)
         moduleDescription = findViewById(R.id.moduleDescription)
+        formContainer = findViewById(R.id.formContainer)
     }
 
     private fun setupRoleSpinner() {
@@ -75,6 +79,14 @@ class MainActivity : AppCompatActivity() {
             currentSession = null
             renderLoggedOut()
         }
+
+        findViewById<Button>(R.id.saveDraftButton).setOnClickListener {
+            Toast.makeText(this, "Borrador guardado localmente (simulado)", Toast.LENGTH_SHORT).show()
+        }
+
+        findViewById<Button>(R.id.submitButton).setOnClickListener {
+            Toast.makeText(this, "Envío no habilitado en este cascarón", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun renderLoggedOut() {
@@ -93,11 +105,41 @@ class MainActivity : AppCompatActivity() {
         modulesRecycler.adapter = ModuleCardAdapter(modules) { module ->
             moduleTitle.text = module.title
             moduleDescription.text = module.description
+            renderModuleForm(module.key)
         }
 
         modules.firstOrNull()?.let {
             moduleTitle.text = it.title
             moduleDescription.text = it.description
+            renderModuleForm(it.key)
+        }
+    }
+
+    private fun renderModuleForm(moduleKey: String) {
+        formContainer.removeAllViews()
+
+        val sections = ModuleFormTemplate.sectionsFor(moduleKey)
+        sections.forEach { section ->
+            val sectionTitle = TextView(this).apply {
+                text = section.title
+                textSize = 16f
+                setPadding(0, 24, 0, 8)
+            }
+            formContainer.addView(sectionTitle)
+
+            section.fields.forEach { field ->
+                val label = TextView(this).apply {
+                    text = field.label
+                    textSize = 13f
+                    setPadding(0, 8, 0, 4)
+                }
+                val input = EditText(this).apply {
+                    hint = field.hint
+                    setPadding(20, 16, 20, 16)
+                }
+                formContainer.addView(label)
+                formContainer.addView(input)
+            }
         }
     }
 }
