@@ -1,44 +1,44 @@
-# Android App - Base para consumir backend con login local
+# Android App - Login contra backend
 
-Este módulo ahora incluye una **estructura base completa** para iniciar una app Android que consume servicios del backend con autenticación local usando **Basic Auth**.
+Estructura Android completa para iniciar sesión contra el backend del sistema con `Basic Auth` y consumir endpoints protegidos.
 
-## Estructura propuesta
+## Estructura
 
-- `api/`
-  - `ApiClient.kt`: configuración Retrofit + OkHttp + interceptor de `Authorization`.
-  - `AuthApi.kt`: endpoint `GET /api/auth/me` para validar sesión.
-  - `ReportsApi.kt`: endpoint de ejemplo protegido.
-- `model/`
-  - `AuthUser.kt`: respuesta de perfil autenticado.
-  - `LoginRequest.kt`: modelo local de credenciales.
-  - `EmployeeAssignedAssetDto.kt`: DTO de reporte.
-- `repository/`
-  - `AuthRepository.kt`: orquestación de login (guardar credenciales y validar con `/api/auth/me`).
-- `session/`
-  - `SessionManager.kt`: persistencia local de credenciales en `SharedPreferences`.
-- `ui/`
-  - `MainActivity.kt`: pantalla de login y demo de consumo de endpoint protegido.
+- `settings.gradle.kts`, `build.gradle.kts`, `gradle.properties` (raíz Android).
+- `app/build.gradle.kts` (módulo app).
+- `api/` (`ApiClient`, `AuthApi`, `ReportsApi`).
+- `model/` (`AuthUser`, `LoginRequest`, `EmployeeAssignedAssetDto`).
+- `session/` (`SessionManager`).
+- `repository/` (`AuthRepository`).
+- `ui/login/` (`LoginViewModel`, `LoginViewModelFactory`).
+- `ui/MainActivity` (pantalla demo con login + endpoint protegido).
 
-## Flujo principal de login local
+## Base URL para dispositivo real
 
-1. Usuario ingresa `username` y `password`.
-2. Se guardan localmente en `SharedPreferences`.
-3. Interceptor agrega header `Authorization: Basic ...` en cada request.
-4. Se llama `GET /api/auth/me` para validar credenciales.
-5. Si es exitoso, se habilita sección protegida de consulta.
+La app está configurada para probar desde un teléfono físico con:
 
-## Configuración rápida
+- `http://192.168.1.4:8080/`
 
-1. Abrir `android-app` en Android Studio.
-2. Ajustar `BASE_URL` en `ApiClient.kt`:
-   - Emulador Android Studio: `http://10.0.2.2:8080/`
-   - Teléfono físico (misma red): `http://<IP_LOCAL_PC>:8080/`
-3. Levantar backend.
-4. Ejecutar app.
+Archivo: `app/src/main/java/com/proyectoinvdebienes/mobile/api/ApiClient.kt`
 
-## Próximos pasos recomendados
+## Flujo de login
 
-- Reemplazar `SharedPreferences` por `EncryptedSharedPreferences`.
-- Migrar `MainActivity` a arquitectura por capas con `ViewModel`.
-- Incorporar navegación por pantallas (`Login`, `Home`, `Módulos`).
-- Manejar expiración/reintento y mensajes de error por código HTTP.
+1. Usuario ingresa usuario y contraseña.
+2. `SessionManager` guarda credenciales localmente.
+3. Interceptor OkHttp agrega header `Authorization: Basic ...`.
+4. `AuthRepository` llama `GET /api/auth/me`.
+5. Si backend responde OK, se habilita la sección protegida.
+
+## Ejecutar en Android Studio
+
+1. Abrir carpeta `android-app` como proyecto.
+2. Esperar `Gradle Sync`.
+3. Verificar JDK 17 en `Settings > Build, Execution, Deployment > Build Tools > Gradle`.
+4. Encender un dispositivo físico con `Depuración USB` o emulador.
+5. Seleccionar configuración `app` y presionar `Run`.
+
+## Requisitos backend
+
+- Backend corriendo en tu PC puerto `8080`.
+- Celular y PC en la misma red Wi-Fi.
+- Firewall permitiendo el puerto `8080`.
