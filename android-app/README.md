@@ -1,37 +1,37 @@
-# Android Demo App (Kotlin) - Inventario de Bienes
+# Android App (Cascarón UI) - Inventario de Bienes
 
-Este módulo contiene una **base mínima** para crear una app Android (celular o tablet) que consume el backend de este repositorio.
+Esta versión es un **cascarón visual completo** basado en la estructura del frontend web:
+- Login
+- Menú por rol
+- Módulos visibles según tipo de usuario
+- Vista de detalle de módulo
 
-## Qué incluye
-- Estructura inicial Android (`android-app/app/...`).
-- Cliente HTTP con **Retrofit**.
-- Modelo para la consulta B (`EmployeeAssignedAssetDto`).
-- Pantalla demo (`MainActivity`) para consultar bienes por empleado.
-- Layout básico con campo de código de empleado y botón de consulta.
+> En esta etapa **no hay conexión al backend**. Todo es UI/flujo local para validar diseño y navegación base.
 
-## Endpoints backend usados
-- `GET /api/reports/employee/{employeeId}/assigned-assets`
+## Roles y módulos (igual que web)
 
-## Requisitos
-- Android Studio (Hedgehog o superior recomendado).
-- SDK mínimo 24.
-- Backend levantado y accesible desde tu teléfono.
+- `ADMINISTRADOR`: todos los módulos.
+- `COMPRAS`: Adquisiciones.
+- `INVENTARIO`: Inventario, Asignaciones, Bajas, Reportes, Catálogos.
+- `FINANZAS`: Reportes.
+- `EMPLEADO`: Mis Activos.
 
-## Configuración rápida
-1. Abre la carpeta `android-app` en Android Studio.
-2. En `ApiClient.kt`, cambia `BASE_URL` por la IP local de tu PC donde corre backend, por ejemplo:
-   - `http://192.168.1.50:8080/`
-3. Levanta backend (`backend`) en tu máquina.
-4. Ejecuta la app en emulador o teléfono.
+## Estructura implementada
 
-## Demo en teléfono (misma red Wi‑Fi)
-1. Conecta teléfono y PC a la misma red.
-2. Obtén IP de tu PC (`ipconfig` en Windows o `ip a` en Linux/macOS).
-3. Asegúrate que firewall permita puerto `8080`.
-4. Inicia backend en `0.0.0.0:8080` si aplica.
-5. En la app, escribe un `employeeId` válido y presiona **Consultar bienes**.
-6. Deberías ver JSON formateado en pantalla.
+- `ui/MainActivity.kt`: login + home en una sola pantalla con cambio de panel.
+- `ui/UserRole.kt`: roles del sistema.
+- `ui/UserSession.kt`: sesión local simulada.
+- `ui/ModuleCard.kt`: modelo de tarjetas.
+- `ui/ModuleCatalog.kt`: catálogo de módulos y reglas por rol.
+- `ui/ModuleCardAdapter.kt`: grid de módulos.
+- `res/layout/activity_main.xml`: diseño principal (login + home).
+- `res/layout/item_module_card.xml`: tarjeta visual de módulo.
 
-## Notas
-- Si tu backend requiere autenticación, agrega interceptor/auth header en Retrofit.
-- Esta base está orientada a una **demo inicial** para continuar iterando UI y seguridad.
+## Cómo usar el cascarón
+
+1. Abrir `android-app` en Android Studio.
+2. Ejecutar en emulador o dispositivo.
+3. En login, escribir usuario/contraseña (simulados) y elegir rol.
+4. Presionar **Entrar**.
+5. Se muestra el menú solo con módulos permitidos para ese rol.
+6. Tocar una tarjeta para ver su descripción funcional.
