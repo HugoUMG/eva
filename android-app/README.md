@@ -1,37 +1,44 @@
-# Android App (Cascarón UI) - Inventario de Bienes
+# Android App - Login contra backend
 
-Esta versión es un **cascarón visual completo** basado en la estructura del frontend web:
-- Login
-- Menú por rol
-- Módulos visibles según tipo de usuario
-- Vista de detalle de módulo
+Estructura Android completa para iniciar sesión contra el backend del sistema con `Basic Auth` y consumir endpoints protegidos.
 
-> En esta etapa **no hay conexión al backend**. Todo es UI/flujo local para validar diseño y navegación base.
+## Estructura
 
-## Roles y módulos (igual que web)
+- `settings.gradle.kts`, `build.gradle.kts`, `gradle.properties` (raíz Android).
+- `app/build.gradle.kts` (módulo app).
+- `api/` (`ApiClient`, `AuthApi`, `ReportsApi`).
+- `model/` (`AuthUser`, `LoginRequest`, `EmployeeAssignedAssetDto`).
+- `session/` (`SessionManager`).
+- `repository/` (`AuthRepository`).
+- `ui/login/` (`LoginViewModel`, `LoginViewModelFactory`).
+- `ui/MainActivity` (pantalla demo con login + endpoint protegido).
 
-- `ADMINISTRADOR`: todos los módulos.
-- `COMPRAS`: Adquisiciones.
-- `INVENTARIO`: Inventario, Asignaciones, Bajas, Reportes, Catálogos.
-- `FINANZAS`: Reportes.
-- `EMPLEADO`: Mis Activos.
+## Base URL para dispositivo real
 
-## Estructura implementada
+La app está configurada para probar desde un teléfono físico con:
 
-- `ui/MainActivity.kt`: login + home en una sola pantalla con cambio de panel.
-- `ui/UserRole.kt`: roles del sistema.
-- `ui/UserSession.kt`: sesión local simulada.
-- `ui/ModuleCard.kt`: modelo de tarjetas.
-- `ui/ModuleCatalog.kt`: catálogo de módulos y reglas por rol.
-- `ui/ModuleCardAdapter.kt`: grid de módulos.
-- `res/layout/activity_main.xml`: diseño principal (login + home).
-- `res/layout/item_module_card.xml`: tarjeta visual de módulo.
+- `http://192.168.1.4:8080/`
 
-## Cómo usar el cascarón
+Archivo: `app/src/main/java/com/proyectoinvdebienes/mobile/api/ApiClient.kt`
 
-1. Abrir `android-app` en Android Studio.
-2. Ejecutar en emulador o dispositivo.
-3. En login, escribir usuario/contraseña (simulados) y elegir rol.
-4. Presionar **Entrar**.
-5. Se muestra el menú solo con módulos permitidos para ese rol.
-6. Tocar una tarjeta para ver su descripción funcional.
+## Flujo de login
+
+1. Usuario ingresa usuario y contraseña.
+2. `SessionManager` guarda credenciales localmente.
+3. Interceptor OkHttp agrega header `Authorization: Basic ...`.
+4. `AuthRepository` llama `GET /api/auth/me`.
+5. Si backend responde OK, se habilita la sección protegida.
+
+## Ejecutar en Android Studio
+
+1. Abrir carpeta `android-app` como proyecto.
+2. Esperar `Gradle Sync`.
+3. Verificar JDK 17 en `Settings > Build, Execution, Deployment > Build Tools > Gradle`.
+4. Encender un dispositivo físico con `Depuración USB` o emulador.
+5. Seleccionar configuración `app` y presionar `Run`.
+
+## Requisitos backend
+
+- Backend corriendo en tu PC puerto `8080`.
+- Celular y PC en la misma red Wi-Fi.
+- Firewall permitiendo el puerto `8080`.

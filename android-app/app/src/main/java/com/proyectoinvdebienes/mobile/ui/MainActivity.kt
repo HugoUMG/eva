@@ -2,102 +2,94 @@ package com.proyectoinvdebienes.mobile.ui
 
 import android.os.Bundle
 import android.view.View
-import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
-import android.widget.Spinner
 import android.widget.TextView
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import com.google.gson.GsonBuilder
 import com.proyectoinvdebienes.mobile.R
+import com.proyectoinvdebienes.mobile.api.ApiClient
+import com.proyectoinvdebienes.mobile.model.EmployeeAssignedAssetDto
+import com.proyectoinvdebienes.mobile.repository.AuthRepository
+import com.proyectoinvdebienes.mobile.session.SessionManager
+import com.proyectoinvdebienes.mobile.ui.login.LoginUiState
+import com.proyectoinvdebienes.mobile.ui.login.LoginViewModel
+import com.proyectoinvdebienes.mobile.ui.login.LoginViewModelFactory
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var loginPanel: View
-    private lateinit var homePanel: View
-    private lateinit var usernameInput: EditText
-    private lateinit var passwordInput: EditText
-    private lateinit var roleSpinner: Spinner
-    private lateinit var loginMessage: TextView
-    private lateinit var sessionText: TextView
-    private lateinit var modulesRecycler: RecyclerView
-    private lateinit var moduleTitle: TextView
-    private lateinit var moduleDescription: TextView
-
-    private var currentSession: UserSession? = null
+    private val loginViewModel: LoginViewModel by viewModels {
+        LoginViewModelFactory(
+            AuthRepository(
+                ApiClient.authApi(this),
+                SessionManager(this)
+            )
+        )
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        bindViews()
-        setupRoleSpinner()
-        setupActions()
-        renderLoggedOut()
-    }
+        val usernameInput = findViewById<EditText>(R.id.usernameInput)
+        val passwordInput = findViewById<EditText>(R.id.passwordInput)
+        val loginButton = findViewById<Button>(R.id.loginButton)
+        val loginResult = findViewById<TextView>(R.id.loginResult)
+        val securedSection = findViewById<View>(R.id.securedSection)
 
-    private fun bindViews() {
-        loginPanel = findViewById(R.id.loginPanel)
-        homePanel = findViewById(R.id.homePanel)
-        usernameInput = findViewById(R.id.usernameInput)
-        passwordInput = findViewById(R.id.passwordInput)
-        roleSpinner = findViewById(R.id.roleSpinner)
-        loginMessage = findViewById(R.id.loginMessage)
-        sessionText = findViewById(R.id.sessionText)
-        modulesRecycler = findViewById(R.id.modulesRecycler)
-        moduleTitle = findViewById(R.id.moduleTitle)
-        moduleDescription = findViewById(R.id.moduleDescription)
-    }
+        val employeeInput = findViewById<EditText>(R.id.employeeIdInput)
+        val fetchButton = findViewById<Button>(R.id.fetchButton)
+        val output = findViewById<TextView>(R.id.outputText)
 
-    private fun setupRoleSpinner() {
-        val roles = UserRole.entries.map { it.name }
-        roleSpinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, roles)
-    }
+        loginViewModel.loginState.observe(this) { state ->
+            when (state) {
+                is LoginUiState.Idle -> loginResult.text = "Estado: pendiente"
+                is LoginUiState.Loading -> loginResult.text = "Autenticando..."
+                is LoginUiState.Success -> {
+                    loginResult.text = "Login correcto: ${state.user.username} (${state.user.role})"
+                    securedSection.visibility = View.VISIBLE
+                }
+                is LoginUiState.Error -> {
+                    loginResult.text = "No se pudo iniciar sesión: ${state.message}"
+                    securedSection.visibility = View.GONE
+                }
+            }
+        }
 
-    private fun setupActions() {
-        findViewById<Button>(R.id.loginButton).setOnClickListener {
-            val username = usernameInput.text.toString().trim()
-            val password = passwordInput.text.toString()
-            val roleName = roleSpinner.selectedItem.toString()
+        loginButton.setOnClickListener {
+            loginViewModel.login(
+                usernameInput.text.toString(),
+                passwordInput.text.toString()
+            )
+        }
 
-            if (username.isBlank() || password.isBlank()) {
-                loginMessage.text = "Completa usuario y contraseña"
+        fetchButton.setOnClickListener {
+            val employeeId = employeeInput.text.toString().toLongOrNull()
+            if (employeeId == null) {
+                output.text = "Ingrese un código de empleado válido."
                 return@setOnClickListener
             }
 
-            val role = UserRole.valueOf(roleName)
-            currentSession = UserSession(username, role)
-            renderLoggedIn(currentSession!!)
-        }
+            output.text = "Consultando..."
+            ApiClient.reportsApi(this).getAssignedAssetsByEmployee(employeeId)
+                .enqueue(object : Callback<List<EmployeeAssignedAssetDto>> {
+                    override fun onResponse(call: Call<List<EmployeeAssignedAssetDto>>, response: Response<List<EmployeeAssignedAssetDto>>) {
+                        if (response.isSuccessful) {
+                            val gson = GsonBuilder().setPrettyPrinting().create()
+                            output.text = gson.toJson(response.body().orEmpty())
+                        } else {
+                            output.text = "Error HTTP: ${response.code()}"
+                        }
+                    }
 
-        findViewById<Button>(R.id.logoutButton).setOnClickListener {
-            currentSession = null
-            renderLoggedOut()
-        }
-    }
-
-    private fun renderLoggedOut() {
-        loginPanel.visibility = View.VISIBLE
-        homePanel.visibility = View.GONE
-        loginMessage.text = "Inicia sesión para acceder a los módulos"
-    }
-
-    private fun renderLoggedIn(session: UserSession) {
-        loginPanel.visibility = View.GONE
-        homePanel.visibility = View.VISIBLE
-        sessionText.text = "Sesión: ${session.username} (${session.role.name})"
-
-        val modules = ModuleCatalog.modulesForRole(session.role)
-        modulesRecycler.layoutManager = GridLayoutManager(this, 2)
-        modulesRecycler.adapter = ModuleCardAdapter(modules) { module ->
-            moduleTitle.text = module.title
-            moduleDescription.text = module.description
-        }
-
-        modules.firstOrNull()?.let {
-            moduleTitle.text = it.title
-            moduleDescription.text = it.description
+                    override fun onFailure(call: Call<List<EmployeeAssignedAssetDto>>, t: Throwable) {
+                        output.text = "Error de red: ${t.message}"
+                    }
+                })
         }
     }
 }
