@@ -1,37 +1,44 @@
-# Android Demo App (Kotlin) - Inventario de Bienes
+# Android App - Login contra backend
 
-Este módulo contiene una **base mínima** para crear una app Android (celular o tablet) que consume el backend de este repositorio.
+Estructura Android completa para iniciar sesión contra el backend del sistema con `Basic Auth` y consumir endpoints protegidos.
 
-## Qué incluye
-- Estructura inicial Android (`android-app/app/...`).
-- Cliente HTTP con **Retrofit**.
-- Modelo para la consulta B (`EmployeeAssignedAssetDto`).
-- Pantalla demo (`MainActivity`) para consultar bienes por empleado.
-- Layout básico con campo de código de empleado y botón de consulta.
+## Estructura
 
-## Endpoints backend usados
-- `GET /api/reports/employee/{employeeId}/assigned-assets`
+- `settings.gradle.kts`, `build.gradle.kts`, `gradle.properties` (raíz Android).
+- `app/build.gradle.kts` (módulo app).
+- `api/` (`ApiClient`, `AuthApi`, `ReportsApi`).
+- `model/` (`AuthUser`, `LoginRequest`, `EmployeeAssignedAssetDto`).
+- `session/` (`SessionManager`).
+- `repository/` (`AuthRepository`).
+- `ui/login/` (`LoginViewModel`, `LoginViewModelFactory`).
+- `ui/MainActivity` (pantalla demo con login + endpoint protegido).
 
-## Requisitos
-- Android Studio (Hedgehog o superior recomendado).
-- SDK mínimo 24.
-- Backend levantado y accesible desde tu teléfono.
+## Base URL para dispositivo real
 
-## Configuración rápida
-1. Abre la carpeta `android-app` en Android Studio.
-2. En `ApiClient.kt`, cambia `BASE_URL` por la IP local de tu PC donde corre backend, por ejemplo:
-   - `http://192.168.1.50:8080/`
-3. Levanta backend (`backend`) en tu máquina.
-4. Ejecuta la app en emulador o teléfono.
+La app está configurada para probar desde un teléfono físico con:
 
-## Demo en teléfono (misma red Wi‑Fi)
-1. Conecta teléfono y PC a la misma red.
-2. Obtén IP de tu PC (`ipconfig` en Windows o `ip a` en Linux/macOS).
-3. Asegúrate que firewall permita puerto `8080`.
-4. Inicia backend en `0.0.0.0:8080` si aplica.
-5. En la app, escribe un `employeeId` válido y presiona **Consultar bienes**.
-6. Deberías ver JSON formateado en pantalla.
+- `http://192.168.1.4:8080/`
 
-## Notas
-- Si tu backend requiere autenticación, agrega interceptor/auth header en Retrofit.
-- Esta base está orientada a una **demo inicial** para continuar iterando UI y seguridad.
+Archivo: `app/src/main/java/com/proyectoinvdebienes/mobile/api/ApiClient.kt`
+
+## Flujo de login
+
+1. Usuario ingresa usuario y contraseña.
+2. `SessionManager` guarda credenciales localmente.
+3. Interceptor OkHttp agrega header `Authorization: Basic ...`.
+4. `AuthRepository` llama `GET /api/auth/me`.
+5. Si backend responde OK, se habilita la sección protegida.
+
+## Ejecutar en Android Studio
+
+1. Abrir carpeta `android-app` como proyecto.
+2. Esperar `Gradle Sync`.
+3. Verificar JDK 17 en `Settings > Build, Execution, Deployment > Build Tools > Gradle`.
+4. Encender un dispositivo físico con `Depuración USB` o emulador.
+5. Seleccionar configuración `app` y presionar `Run`.
+
+## Requisitos backend
+
+- Backend corriendo en tu PC puerto `8080`.
+- Celular y PC en la misma red Wi-Fi.
+- Firewall permitiendo el puerto `8080`.

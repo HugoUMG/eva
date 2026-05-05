@@ -1,0 +1,10 @@
+<resources>
+    <color name="bg_gradient_start">#EEF6FF</color>
+    <color name="bg_gradient_mid">#F8FBFF</color>
+    <color name="bg_gradient_end">#EEF2FF</color>
+    <color name="card_border">#DBEAFE</color>
+    <color name="card_title">#0F172A</color>
+    <color name="muted">#475569</color>
+    <color name="primary">#2563EB</color>
+    <color name="primary_dark">#1D4ED8</color>
+</resources>
